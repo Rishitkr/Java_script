@@ -1,25 +1,59 @@
-const inpt=document.querySelectorAll('input');
-const btn=document.querySelectorAll('button');
+let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
 
-let string="";
-let arr=Array.from(btn);
-arr.forEach((button)=>{
-    button.addEventListener('click',(e)=>{
-        if(e.target.innerHTML=='='){
-            string=eval(string);
-            inpt[0].value=string;
+function addTask() {
+    const taskInput = document.getElementById('taskInput');
+    const taskText = taskInput.value.trim();
+    
+    if (taskText !== '') {
+        const task = {
+            id: Date.now(),
+            text: taskText,
+            completed: false
+        };
+        
+        tasks.push(task);
+        saveTasks();
+        renderTasks();
+        taskInput.value = '';
+    }
+}
+
+function deleteTask(taskId) {
+    tasks = tasks.filter(task => task.id !== taskId);
+    saveTasks();
+    renderTasks();
+}
+
+function toggleTask(taskId) {
+    tasks = tasks.map(task => {
+        if (task.id === taskId) {
+            return { ...task, completed: !task.completed };
         }
-        else if(e.target.innerHTML=='AC'){
-            string="";
-            inpt[0].value=string;
-        }
-        else if(e.target.innerHTML=='DEL'){
-            string=string.slice(0,-1);
-            inpt[0].value=string;
-        }
-        else{
-            string+=e.target.innerHTML;
-            inpt[0].value=string;
-        }
-    })
-})
+        return task;
+    });
+    saveTasks();
+    renderTasks();
+}
+
+function saveTasks() {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+function renderTasks() {
+    const taskList = document.getElementById('taskList');
+    taskList.innerHTML = '';
+    
+    tasks.forEach(task => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <span class="${task.completed ? 'completed' : ''}" onclick="toggleTask(${task.id})">
+                ${task.text}
+            </span>
+            <button onclick="deleteTask(${task.id})">Finish</button>
+        `;
+        taskList.appendChild(li);
+    });
+}
+
+// Initial render
+renderTasks();
